@@ -1,0 +1,39 @@
+# Default session for the TartanRGBT payload (tartan_rgbt_ws). Edit in the web page or here.
+name: rgbt_extrinsics
+target:
+  inner_cols: 6
+  inner_rows: 8
+  square_m: 0.05
+  border_m: 0.03
+kalibr_yaml: ~/calib/kalibr_consolidated.yaml   # consolidated Kalibr camchain (cam0..camN)
+reference: zed_left
+sensors:
+  # ZED wrapper @24d219b publishes rectified BGRA at pub_downscale_factor 2 (~960x600).
+  # Its Kalibr entry must describe this rectified stream (pinhole, distortion none); a uniform
+  # resolution difference is rescaled automatically.
+  - {name: zed_left, topic: /zed/zed_node/left/image_rect_color, kalibr_cam: "", still_px: 0.3, ffc_topic: ""}
+  # Raw 16UC1 Boson frames (not image_rect: its new camera matrix is never published).
+  - {name: thermal_left, topic: /thermal_left/image, kalibr_cam: "", still_px: 0.3, ffc_topic: /thermal_left/ffc_status}
+  - {name: thermal_right, topic: /thermal_right/image, kalibr_cam: "", still_px: 0.3, ffc_topic: /thermal_right/ffc_status}
+edges:
+  - {a: zed_left, b: thermal_left, enabled: true}
+  - {a: zed_left, b: thermal_right, enabled: true}
+  - {a: thermal_left, b: thermal_right, enabled: true}
+coverage:
+  depth_min_m: 0.6
+  depth_max_m: 2.0
+  depth_bins: 3
+  frontal_max_deg: 10.0
+  tilt_levels_deg: [25.0]
+  grid_cols: 3
+  grid_rows: 3
+  min_per_bin: 1
+  min_per_cell: 1
+  hold_s: 1.5
+  dup_trans_m: 0.05
+  dup_rot_deg: 5.0
+  min_square_px: 8.0
+  edge_margin_px: 10.0
+extrinsics_prior: {}   # optional {sensor: 4x4 T_ref_sensor}; otherwise composed from Kalibr T_cn_cnm1
+move_mode: board
+output_dir: ~/calib_sessions
